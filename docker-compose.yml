@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: ./backend-api
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_DSN: ${DATABASE_DSN}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-john@veilstream.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      PORT: "3000"
+    volumes:
+      # Mount APK dir so GET /apk/latest always serves the latest from the host (no backend rebuild needed).
+      - ./backend-api/apk:/app/apk
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+        VITE_APP_VERSION: ${APP_VERSION:-1.0.0}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

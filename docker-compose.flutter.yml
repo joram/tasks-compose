@@ -1,0 +1,29 @@
+# Run Flutter commands in a container (no local Flutter needed).
+# Usage:
+#   docker compose -f docker-compose.flutter.yml run --rm flutter-create
+#   docker compose -f docker-compose.flutter.yml run --rm flutter flutter pub get
+#   docker compose -f docker-compose.flutter.yml run --rm flutter flutter build apk --release
+#
+# Or use Makefile: make flutter-create, make flutter-get, make apk-docker
+
+services:
+  flutter:
+    image: ghcr.io/cirruslabs/flutter:stable
+    working_dir: /app
+    volumes:
+      - ./mobile/flutter:/app
+    # Override in make or CLI, e.g. flutter create . --org com.veilstream --project-name task_tracker
+    command: ["flutter", "pub", "get"]
+    # Optional: pass API_URL when building
+    # environment:
+    #   - API_URL
+
+  # One-off "create" run - use: docker compose -f docker-compose.flutter.yml run --rm flutter-create
+  flutter-create:
+    image: ghcr.io/cirruslabs/flutter:stable
+    working_dir: /app
+    volumes:
+      - ./mobile/flutter:/app
+    command: ["flutter", "create", ".", "--org", "com.veilstream", "--project-name", "task_tracker"]
+    profiles:
+      - create
