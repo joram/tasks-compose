@@ -7,7 +7,7 @@ services:
       - "3000:3000"
     environment:
       DATABASE_DSN: ${DATABASE_DSN}
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-123changemeplease}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-john@veilstream.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       PORT: "3000"
