@@ -47,14 +47,17 @@ task-tracker/
 
 ### Database
 
-Hosted on Supabase PostgreSQL. Set `DATABASE_DSN` to the full connection string (e.g. Supabase pooler).
+With **docker compose**, a **PostgreSQL 16** service runs by default (`postgres` on port 5432, data in volume `postgres_data`). The backend connects using that unless you set **`DATABASE_DSN`** (e.g. Supabase), which always wins.
+
+If `DATABASE_DSN` is empty, the API builds a URL from **`DATABASE_HOST`** (default `postgres`), **`POSTGRES_USER`**, **`POSTGRES_PASSWORD`**, **`POSTGRES_DB`**, and **`POSTGRES_PORT`** (defaults match the compose service).
 
 ### Environment Variables
 
 Create `backend-api/.env` or use root `.env` for docker-compose:
 
 ```env
-DATABASE_DSN=postgresql://postgres.PROJECT_REF:YOUR_PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres
+# Optional: remote DB (overrides bundled Postgres URL)
+# DATABASE_DSN=postgresql://postgres.PROJECT_REF:YOUR_PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres
 JWT_SECRET=your-jwt-secret
 PORT=3000
 ```
