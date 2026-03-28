@@ -1,12 +1,37 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tasktracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tasktracker}
+      POSTGRES_DB: ${POSTGRES_DB:-tasktracker}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tasktracker} -d ${POSTGRES_DB:-tasktracker}"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend-api
       dockerfile: Dockerfile
+    dns:
+      - 192.168.1.1
+      - 8.8.8.8
     ports:
       - "3000:3000"
     environment:
-      DATABASE_DSN: ${DATABASE_DSN}
+      # Optional: full URL (e.g. Supabase). If unset, backend uses POSTGRES_* + DATABASE_HOST below.
+      DATABASE_DSN: ${DATABASE_DSN:-}
+      DATABASE_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-tasktracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tasktracker}
+      POSTGRES_DB: ${POSTGRES_DB:-tasktracker}
       JWT_SECRET: ${JWT_SECRET:-123changemeplease}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-john@veilstream.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
@@ -14,6 +39,9 @@ services:
     volumes:
       # Mount APK dir so GET /apk/latest always serves the latest from the host (no backend rebuild needed).
       - ./backend-api/apk:/app/apk
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   web:
@@ -28,3 +56,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  postgres_data:
